@@ -1,0 +1,55 @@
+<html>
+    <body>
+        <a href="#" id="action">Auth</a>
+        <script>
+            const MY_DOMAIN = "jacobsalmo-20210419-demo.my.salesforce.com";
+            const CLIENT_ID = "3MVG9cHH2bfKACZYlcouinA8M4oYG0o4lumAZBCGQ.a06tKurwwP6LASFpNmI5.0vbkXtWnKGABiudEb1DHo8";
+            const REDIRECT_URI = "http://localhost:8080/index.html";
+            const SCOPES = ["api", "id", "offline_access"];
+        </script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/crypto-js.min.js"></script>
+        <script>
+            function generateRandomString(length) {
+                var text = "";
+                var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+                for (var i = 0; i < length; i++) {
+                    text += possible.charAt(Math.floor(Math.random() * possible.length));
+                }
+                return text;
+            }
+            function generateCodeChallenge(code_verifier) {
+                return base64URL(CryptoJS.SHA256(code_verifier))
+            }
+    
+            function base64URL(string) {
+                return string.toString(CryptoJS.enc.Base64).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_')
+            }
+
+            if (document.location.search !== "" && document.location.search.indexOf("code=") > 0) {
+                const urlParams = new URLSearchParams(window.location.search);
+                const code = urlParams.get('code');
+                const verifier = localStorage.getItem("code_verifier");
+                fetch(`https://${MY_DOMAIN}/services/oauth2/token`, {
+                    "method": "post",
+                    "redirect": "manual",
+                    "body": `grant_type=authorization_code&code=${code}&client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI}&code_verifier=${verifier}`,
+                    "headers": {
+                        "accept": "application/json",
+                        "content-type": "application/x-www-form-urlencoded"
+                    }
+                }).then(res => res.json()).then(body => {
+                    console.log(body);
+                })
+            } else {
+                const CODE_VERIFIER = generateRandomString(128); 
+                const CODE_CHALLENGE = generateCodeChallenge(CODE_VERIFIER);
+                localStorage.setItem("code_verifier", CODE_VERIFIER);
+                console.log(CODE_VERIFIER);
+                console.log(CODE_CHALLENGE);
+                document.getElementById("action").addEventListener("click", () => {
+                    document.location.href = `https://${MY_DOMAIN}/services/oauth2/authorize?client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI}&scope=${SCOPES.join("+")}&response_type=code&code_challenge=${CODE_CHALLENGE}&code_challenge_method=S256`;
+                })
+            }
+        </script>
+    </body>
+</html>

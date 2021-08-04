@@ -1,0 +1,15 @@
+{
+  "name": "salesforce_authcode_pkcs_test",
+  "version": "1.0.0",
+  "description": "Using authcode flow with Salesforce using PKCS",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx http-server"
+  },
+  "keywords": [],
+  "author": "Mikkel Flindt Heisterberg",
+  "license": "MIT",
+  "dependencies": {
+    "http-server": "^0.12.3"
+  }
+}
